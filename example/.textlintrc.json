@@ -1,0 +1,6 @@
+{
+  "rules": {
+    "no-hankaku-kana": true,
+    "max-comma": true
+  }
+}
