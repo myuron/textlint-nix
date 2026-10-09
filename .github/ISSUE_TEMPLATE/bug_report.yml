@@ -1,0 +1,62 @@
+name: Bug report
+description: Report a problem with textlint-nix
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A short summary of what is going wrong.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: The relevant part of your `flake.nix` (such as the configuration passed to `mkTextlint`) and the command you ran.
+      render: nix
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Paste any error messages or build logs.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: plugin
+    attributes:
+      label: Affected plugin
+      description: If the problem is specific to one plugin, give its name.
+      placeholder: textlint-rule-no-hankaku-kana
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options:
+        - x86_64-linux
+        - aarch64-linux
+        - aarch64-darwin
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions
+      description: The output of `nix --version`, and the textlint-nix and nixpkgs revisions from your `flake.lock`.
+      placeholder: |
+        nix (Nix) 2.x.x
+        textlint-nix: <rev>
+        nixpkgs: <rev>
+    validations:
+      required: true

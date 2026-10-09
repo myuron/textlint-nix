@@ -1,0 +1,46 @@
+name: Feature request
+description: Request a new plugin or suggest an improvement
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - New plugin
+        - Module option or lib improvement
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Problem
+      description: What are you trying to do, and why is it needed?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What you would like to see. An example of the configuration you would write is helpful.
+    validations:
+      required: true
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin name
+      description: For a new plugin, the npm package name.
+      placeholder: textlint-rule-preset-ja-technical-writing
+  - type: input
+    id: upstream
+    attributes:
+      label: Upstream repository
+      description: For a new plugin, the URL of its upstream repository.
+      placeholder: https://github.com/textlint-ja/textlint-rule-preset-ja-technical-writing
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Any other approaches or workarounds you considered.
