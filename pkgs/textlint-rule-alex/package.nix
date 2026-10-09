@@ -1,0 +1,33 @@
+{
+  lib,
+  buildNpmPackage,
+  fetchFromGitHub,
+  textlint,
+}:
+
+buildNpmPackage (finalAttrs: {
+  pname = "textlint-rule-alex";
+  version = "5.0.0";
+
+  src = fetchFromGitHub {
+    owner = "textlint-rule";
+    repo = "textlint-rule-alex";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-1JoiUhiRXZWIyLAJXp5ZzFAa/NBCN79jYh5kMNbO0jI=";
+  };
+
+  npmDepsHash = "sha256-ovDDiOZ415ubyDqbLNggzoVuqUWsRlG3zlhRW6xU3SQ=";
+
+  passthru.tests = textlint.testPackages {
+    rule = finalAttrs.finalPackage;
+    testFile = ./test.md;
+  };
+
+  meta = {
+    description = "Textlint rule for alex";
+    homepage = "https://github.com/textlint-rule/textlint-rule-alex";
+    changelog = "https://github.com/textlint-rule/textlint-rule-alex/releases/tag/v${finalAttrs.version}";
+    license = lib.licenses.mit;
+    inherit (textlint.meta) platforms;
+  };
+})
