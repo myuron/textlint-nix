@@ -31,7 +31,7 @@ If you use [direnv](https://direnv.net/), `direnv allow` puts you in the devShel
 Before proposing a change, please review the following principles.
 
 - The user-facing interface is the module option (`plugins.<name>.enable = true;`).
-- Plugins are not taken from nixpkgs. Plugins that already exist in nixpkgs (`textlint-rule-*` / `textlint-plugin-*`) are also packaged in `pkgs/` of this repository. textlint itself (`textlint.withPackages`) comes from nixpkgs.
+- Plugins are not taken from nixpkgs. Plugins that already exist in nixpkgs (`textlint-rule-*` / `textlint-filter-rule-*` / `textlint-plugin-*`) are also packaged in `pkgs/` of this repository. textlint itself (`textlint.withPackages`) comes from nixpkgs.
 - Each plugin gets its own derivation. If upstream uses npm (`package-lock.json`), write it with `buildNpmPackage`. Only if upstream uses yarn / pnpm, use `stdenv.mkDerivation` with `fetchYarnDeps` / `fetchPnpmDeps` instead of `buildNpmPackage`.
 - A plugin derivation must be in a form that can be passed to nixpkgs' `textlint.withPackages` as is.
 - The module stays a thin layer that collects the enabled plugins and passes them to `withPackages`. Plugin-specific quirks are handled in the derivation.
@@ -45,7 +45,11 @@ Before proposing a change, please review the following principles.
 
 ### 2. Write the derivation
 
-Create `pkgs/<name>/package.nix`. `<name>` must match the npm package name (`textlint-rule-*` / `textlint-plugin-*`). This directory name becomes `plugins.<name>` and `packages.<system>.<name>` as is. `pkgs/default.nix` picks up directories automatically, so you do not need to register the plugin in a list.
+Create `pkgs/<name>/package.nix`. `<name>` must match the npm package name (`textlint-rule-*` / `textlint-filter-rule-*` / `textlint-plugin-*`). This directory name becomes `plugins.<name>` and `packages.<system>.<name>` as is. `pkgs/default.nix` picks up directories automatically, so you do not need to register the plugin in a list.
+
+For a scoped package (`@scope/name`), `<name>` and `pname` are the npm name without the scope. For example, `@textlint-ja/textlint-rule-no-synonyms` becomes `textlint-rule-no-synonyms`. If a package with the same name under another scope shows up, handle it individually. The install location is derived from `name` in `package.json` and stays `lib/node_modules/@scope/name`, so the derivation needs no special handling.
+
+A few packages are published under an npm name without the `textlint-rule-` / `textlint-plugin-` prefix, such as the preset `slopless`. For these, `<name>` and `pname` are the npm name as is. Do not add a prefix that upstream does not use: textlint resolves the package by its npm name.
 
 Use the existing [`pkgs/textlint-rule-no-hankaku-kana/package.nix`](./pkgs/textlint-rule-no-hankaku-kana/package.nix) as a reference. If upstream uses yarn, use [`pkgs/textlint-rule-max-comma/package.nix`](./pkgs/textlint-rule-max-comma/package.nix) instead. It combines `stdenv.mkDerivation` with the yarn hooks (`yarnConfigHook` and others) rather than using `buildNpmPackage`.
 
@@ -56,6 +60,10 @@ For less common cases, use these as a reference.
 - Upstream has no lockfile, so one is vendored next to `package.nix`: [`pkgs/textlint-rule-common-misspellings/package.nix`](./pkgs/textlint-rule-common-misspellings/package.nix)
 - Test of a `textlint-plugin-*`, which takes the `plugin` argument and another rule under `pkgs/`: [`pkgs/textlint-plugin-latex2e/package.nix`](./pkgs/textlint-plugin-latex2e/package.nix)
 - Test of a rule that reports nothing without configuration, written as a dedicated `runCommand`: [`pkgs/textlint-rule-prh/package.nix`](./pkgs/textlint-rule-prh/package.nix)
+- Scoped package (`@scope/name`): [`pkgs/textlint-rule-no-filler/package.nix`](./pkgs/textlint-rule-no-filler/package.nix)
+- Package whose npm name has no `textlint-rule-` / `textlint-plugin-` prefix: [`pkgs/slopless/package.nix`](./pkgs/slopless/package.nix)
+- Test of a `textlint-filter-rule-*`, written as a dedicated `runCommand` that compares the reports of a rule with and without the filter: [`pkgs/textlint-filter-rule-comments/package.nix`](./pkgs/textlint-filter-rule-comments/package.nix)
+- A dependency has a native addon that cannot be built from the upstream lockfile: [`pkgs/textlint-filter-rule-urls/package.nix`](./pkgs/textlint-filter-rule-urls/package.nix)
 
 A plugin name listed in the arguments of `package.nix` resolves to the one under `pkgs/`, not the one in nixpkgs.
 
@@ -86,6 +94,44 @@ passthru.tests = textlint.testPackages {
   plugin = finalAttrs.finalPackage;
   rule = textlint-rule-max-comma;
   testFile = ./test.tex;
+};
+```
+
+`testPackages` cannot be used for a scoped package, because it derives the rule name from `pname`, which does not carry the scope. Write a dedicated `runCommand` that passes `--rule @scope/<name without the textlint-rule- prefix>` to textlint and greps the output for that name, as in [`pkgs/textlint-rule-no-filler/package.nix`](./pkgs/textlint-rule-no-filler/package.nix).
+
+`testPackages` cannot be used for a package without the prefix either, because it derives the rule name and the choice between `--rule` and `--preset` from the `textlint-rule-` / `textlint-rule-preset-` prefix of `pname`. Write a dedicated `runCommand` that passes the npm name to `--rule` or `--preset`, as in [`pkgs/slopless/package.nix`](./pkgs/slopless/package.nix).
+
+`testPackages` cannot be used for a `textlint-filter-rule-*` either. A filter rule reports nothing on its own, and it can only be enabled under `filters` in `.textlintrc`: textlint has no command line option for it. Test it in combination with a rule under `pkgs/`, taken as an argument of `package.nix`.
+
+- In the test document, violate that rule twice: once where the filter applies and once where it does not.
+- Next to it, put a `textlintrc` that enables both the rule and the filter, as in `{ "rules": { "no-todo": true }, "filters": { "comments": true } }`. The filter is named without the `textlint-filter-rule-` prefix.
+- In a dedicated `runCommand`, check that one violation is reported with `--config textlintrc`, and two with `--rule <rule>` alone.
+
+One violation is left with the filter on purpose. If textlint could not load the configuration, it would report none, which must not pass as "suppressed". See [`pkgs/textlint-filter-rule-comments/package.nix`](./pkgs/textlint-filter-rule-comments/package.nix).
+
+```nix
+passthru.tests = {
+  "${finalAttrs.pname}-test" =
+    runCommand "${finalAttrs.pname}-test"
+      {
+        nativeBuildInputs = [
+          (textlint.withPackages [
+            finalAttrs.finalPackage
+            textlint-rule-no-todo
+          ])
+        ];
+      }
+      ''
+        textlint --config ${./textlintrc} ${./test.md} > result.txt || true
+        cat result.txt
+        test "$(grep -c no-todo result.txt)" -eq 1
+
+        textlint --rule no-todo ${./test.md} > result-unfiltered.txt || true
+        cat result-unfiltered.txt
+        test "$(grep -c no-todo result-unfiltered.txt)" -eq 2
+
+        cp result.txt $out
+      '';
 };
 ```
 
