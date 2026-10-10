@@ -1,0 +1,1 @@
+{ "rules": { "max-kanji-continuous-len": true }, "filters": { "ja-named-entities": true } }

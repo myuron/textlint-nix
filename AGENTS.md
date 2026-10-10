@@ -15,7 +15,9 @@
 - 利用者向けのインターフェースはmoduleオプション(`plugins.<name>.enable = true;`)とする。
 - pluginは`buildNpmPackage`でpluginごとに個別のderivationを書く。上流がyarn / pnpmの場合のみ`fetchYarnDeps` / `fetchPnpmDeps`を使う。
 - pluginのderivationはnixpkgsの`textlint.withPackages`にそのまま渡せる形にする。moduleは有効なpluginを集めて`withPackages`に渡す薄い層に留める。
-- pluginはnixpkgsから取らない。nixpkgsに既にあるplugin(`textlint-rule-*` / `textlint-plugin-*`)も、このリポジトリの`pkgs/`でパッケージする。textlint本体(`textlint.withPackages`)はnixpkgsのものを使う。
+- pluginはnixpkgsから取らない。nixpkgsに既にあるplugin(`textlint-rule-*` / `textlint-plugin-*` / `textlint-filter-rule-*`)も、このリポジトリの`pkgs/`でパッケージする。textlint本体(`textlint.withPackages`)はnixpkgsのものを使う。
+- scoped package(`@scope/name`)はscopeを落とした`name`を`pkgs/<name>`にする。
+- 上流のバグや旧仕様を直す書き換えは入れない。上流の修正を待ち、制限はREADMEに注記する。Nixで動かすための最低限の適合(nixpkgsのランタイムを参照させるなど)は入れてよい。
 
 ## コマンド
 

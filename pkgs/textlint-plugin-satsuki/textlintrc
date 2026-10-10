@@ -1,0 +1,1 @@
+{ "plugins": ["satsuki"], "rules": { "max-comma": true } }

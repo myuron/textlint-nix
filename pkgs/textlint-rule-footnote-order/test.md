@@ -1,0 +1,6 @@
+foo [^foo]
+bar [^bar]
+
+
+[^foo]: foo is ...
+[^bar]: bar is ...
