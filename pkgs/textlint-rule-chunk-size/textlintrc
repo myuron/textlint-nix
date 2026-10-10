@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "chunk-size": {
+      "chunkSize": 10,
+      "delimiter": "page: "
+    }
+  }
+}

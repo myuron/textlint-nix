@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<housouKinshiYougoList date="2011-03-04" version="1.0">
+<dirtyWord>
+<word reading="さかなや" wordClass="名詞">魚屋</word>
+<replaceWordList>
+<word reading="せんぎょしょう" wordClass="名詞">鮮魚商</word>
+</replaceWordList>
+<notes>職業名</notes>
+</dirtyWord>
+<dirtyWord>
+<word reading="やおや" wordClass="名詞">八百屋</word>
+<replaceWordList>
+<word reading="せいかしょう" wordClass="名詞">青果商</word>
+</replaceWordList>
+<notes>職業名</notes>
+</dirtyWord>
+</housouKinshiYougoList>
