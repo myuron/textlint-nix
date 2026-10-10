@@ -20,6 +20,11 @@ buildNpmPackage (finalAttrs: {
 
   npmDepsHash = "sha256-eF1SLx44FZeD7BsZ+dJPh50ixTM5kQvzgEjgxSrdwps=";
 
+  # The install script (node-pre-gyp) of fsevents 1.2.9, a macOS-only optional
+  # dependency of the devDependencies, does not build with the current
+  # Node.js. It is only used for watching files and not needed for the build.
+  npmRebuildFlags = [ "--ignore-scripts" ];
+
   passthru.tests = textlint.testPackages {
     inherit (finalAttrs) pname;
     rule = textlint-rule-max-comma;

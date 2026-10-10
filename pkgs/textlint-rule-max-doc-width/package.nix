@@ -20,6 +20,11 @@ buildNpmPackage (finalAttrs: {
 
   npmDepsHash = "sha256-pMR/Zu1DFHj6wh8qrs8Nrs8uT7VJoy+LF5dJNm7c17E=";
 
+  # The install script (node-gyp) of fsevents 1.2.12, a macOS-only optional
+  # dependency of the devDependencies, does not build with the current
+  # Node.js. It is only used for watching files and not needed for the build.
+  npmRebuildFlags = [ "--ignore-scripts" ];
+
   passthru.tests = textlint.testPackages {
     rule = finalAttrs.finalPackage;
     testFile = ./test.md;

@@ -35,6 +35,11 @@ buildNpmPackage (finalAttrs: {
   # dependency, which npm would otherwise try to fetch.
   npmFlags = [ "--legacy-peer-deps" ];
 
+  # The install script (node-gyp) of fsevents 1.2.12, a macOS-only optional
+  # dependency of the devDependencies, does not build with the current
+  # Node.js. It is only used for watching files and not needed for the build.
+  npmRebuildFlags = [ "--ignore-scripts" ];
+
   passthru.tests = textlint.testPackages {
     rule = finalAttrs.finalPackage;
     testFile = ./test.md;
